@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Powered Developer Card Generator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0b1e;
+        --surface: #13112b;
+        --card-bg: #16143a;
+        --border: rgba(120, 80, 255, 0.25);
+        --purple: #7c3aed;
+        --violet: #a855f7;
+        --pink: #ec4899;
+        --cyan: #06b6d4;
+        --text: #f0eeff;
+        --muted: #9b8fc8;
+        --input-bg: #1e1b3a;
+        --glow: rgba(124, 58, 237, 0.35);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ── Animated background ── */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 10% 10%,
+            rgba(124, 58, 237, 0.18) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 50% at 90% 90%,
+            rgba(6, 182, 212, 0.1) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 50% 40% at 50% 50%,
+            rgba(168, 85, 247, 0.07) 0%,
+            transparent 70%
+          );
+        pointer-events: none;
+      }
+
+      .page-wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      /* ── Header ── */
+      header {
+        text-align: center;
+        margin-bottom: 56px;
+        animation: fadeDown 0.7s ease both;
+      }
+
+      header .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(124, 58, 237, 0.15);
+        border: 1px solid rgba(124, 58, 237, 0.35);
+        border-radius: 100px;
+        padding: 6px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--violet);
+        letter-spacing: 0.06em;
+        margin-bottom: 18px;
+      }
+      header .badge span {
+        font-size: 16px;
+      }
+
+      header h1 {
+        font-family: "Syne", sans-serif;
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        font-weight: 800;
+        line-height: 1.1;
+        background: linear-gradient(
+          135deg,
+          #c084fc 0%,
+          #818cf8 50%,
+          #38bdf8 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 12px;
+      }
+
+      header p {
+        color: var(--muted);
+        font-size: 1rem;
+        max-width: 420px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      /* ── Layout ── */
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        align-items: start;
+      }
+
+      @media (max-width: 760px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── Form Panel ── */
+      .form-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 36px 32px;
+        animation: fadeLeft 0.7s 0.15s ease both;
+      }
+
+      .form-panel h2 {
+        font-family: "Syne", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .form-panel h2 .icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--purple), var(--cyan));
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+      }
+
+      .field {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--violet);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1px solid rgba(124, 58, 237, 0.3);
+        border-radius: 12px;
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 15px;
+        padding: 13px 16px;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      select:focus {
+        border-color: var(--violet);
+        box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18);
+      }
+
+      select {
+        appearance: none;
+        cursor: pointer;
+      }
+      select option {
+        background: #1e1b3a;
+      }
+
+      /* ── Image Upload ── */
+      .upload-zone {
+        border: 2px dashed rgba(124, 58, 237, 0.4);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        position: relative;
+        overflow: hidden;
+        background: rgba(124, 58, 237, 0.04);
+      }
+      .upload-zone:hover {
+        border-color: var(--violet);
+        background: rgba(124, 58, 237, 0.09);
+      }
+      .upload-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .upload-zone .upload-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+      .upload-zone p {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .upload-zone strong {
+        color: var(--violet);
+      }
+      #preview-thumb {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 8px;
+        display: none;
+        border: 3px solid var(--violet);
+      }
+
+      /* Extra fields */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      /* ── Generate Button ── */
+      .btn-generate {
+        width: 100%;
+        margin-top: 8px;
+        padding: 15px;
+        background: linear-gradient(
+          135deg,
+          var(--purple) 0%,
+          var(--violet) 60%,
+          var(--cyan) 100%
+        );
+        border: none;
+        border-radius: 14px;
+        color: #fff;
+        font-family: "Syne", sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.15s,
+          box-shadow 0.2s;
+        box-shadow: 0 6px 28px rgba(124, 58, 237, 0.45);
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-generate::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.12),
+          transparent
+        );
+        transform: translateX(-100%);
+        transition: transform 0.5s;
+      }
+      .btn-generate:hover::after {
+        transform: translateX(100%);
+      }
+      .btn-generate:hover {
+        opacity: 0.92;
+        box-shadow: 0 8px 36px rgba(124, 58, 237, 0.6);
+      }
+      .btn-generate:active {
+        transform: scale(0.97);
+      }
+
+      /* ── Preview Panel ── */
+      .preview-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        animation: fadeRight 0.7s 0.25s ease both;
+      }
+
+      .preview-label {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .preview-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--border), transparent);
+      }
+
+      /* ── The Card ── */
+      .card-wrap {
+        perspective: 1000px;
+      }
+
+      .dev-card {
+        background: linear-gradient(
+          135deg,
+          #1a1440 0%,
+          #0f0d2a 60%,
+          #1a1144 100%
+        );
+        border: 1.5px solid rgba(120, 80, 255, 0.3);
+        border-radius: 28px;
+        padding: 36px 32px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+          0 24px 60px rgba(0, 0, 0, 0.5),
+          0 0 80px rgba(124, 58, 237, 0.12);
+        transition:
+          transform 0.4s,
+          box-shadow 0.4s;
+      }
+
+      .dev-card:hover {
+        transform: rotateY(-3deg) rotateX(2deg);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+          0 32px 80px rgba(0, 0, 0, 0.6),
+          0 0 100px rgba(124, 58, 237, 0.2);
+      }
+
+      /* Decorative glows */
+      .dev-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background:
+          radial-gradient(
+            circle 140px at 20% 20%,
+            rgba(124, 58, 237, 0.2),
+            transparent
+          ),
+          radial-gradient(
+            circle 100px at 80% 80%,
+            rgba(6, 182, 212, 0.1),
+            transparent
+          );
+        pointer-events: none;
+      }
+
+      /* Code tag watermark */
+      .dev-card::after {
+        content: "</>";
+        position: absolute;
+        top: 50%;
+        right: 190px;
+        transform: translateY(-50%);
+        font-family: "Syne", sans-serif;
+        font-size: 60px;
+        font-weight: 800;
+        color: rgba(124, 58, 237, 0.08);
+        pointer-events: none;
+        letter-spacing: -4px;
+      }
+
+      .card-left {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Brand row */
+      .card-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 22px;
+      }
+      .brand-icon {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, var(--purple), var(--violet));
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+      }
+      .brand-name {
+        font-family: "Syne", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #fff;
+      }
+      .brand-name small {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 12px;
+        display: block;
+      }
+
+      /* Title block */
+      .card-title {
+        margin-bottom: 22px;
+      }
+      .card-title .ai-text {
+        font-family: "Syne", sans-serif;
+        font-size: 2.4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #c084fc, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        display: block;
+      }
+      .card-title .sub-text {
+        font-family: "Syne", sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #fff;
+        display: block;
+        margin-top: 2px;
+      }
+
+      .card-divider {
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--purple),
+          var(--cyan),
+          transparent
+        );
+        border-radius: 2px;
+        margin-bottom: 24px;
+        width: 70%;
+      }
+
+      /* Info rows */
+      .info-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      .info-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .info-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border: 1.5px solid rgba(168, 85, 247, 0.4);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 17px;
+        background: rgba(124, 58, 237, 0.1);
+      }
+
+      .info-content {
+      }
+      .info-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--violet);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 2px;
+      }
+      .info-value {
+        font-family: "Syne", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      /* Photo side */
+      .card-photo-wrap {
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+      }
+      .card-photo {
+        width: 190px;
+        height: 230px;
+        border-radius: 20px;
+        object-fit: cover;
+        border: 2px solid rgba(168, 85, 247, 0.4);
+        display: block;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 0 0 6px rgba(124, 58, 237, 0.08);
+        background: linear-gradient(135deg, #2d2060, #1a1040);
+      }
+      .card-photo-placeholder {
+        width: 190px;
+        height: 230px;
+        border-radius: 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(124, 58, 237, 0.2),
+          rgba(6, 182, 212, 0.1)
+        );
+        border: 2px dashed rgba(168, 85, 247, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .card-photo-placeholder .big-icon {
+        font-size: 42px;
+      }
+
+      /* Dot grid decoration */
+      .dot-grid {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: grid;
+        grid-template-columns: repeat(5, 6px);
+        gap: 5px;
+        opacity: 0.25;
+      }
+      .dot-grid span {
+        width: 4px;
+        height: 4px;
+        background: var(--violet);
+        border-radius: 50%;
+        display: block;
+      }
+
+      /* ── Download button ── */
+      .btn-download {
+        width: 100%;
+        padding: 13px;
+        background: transparent;
+        border: 1.5px solid rgba(124, 58, 237, 0.45);
+        border-radius: 14px;
+        color: var(--violet);
+        font-family: "Syne", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .btn-download:hover {
+        background: rgba(124, 58, 237, 0.12);
+        border-color: var(--violet);
+        color: #fff;
+      }
+
+      /* ── Animations ── */
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-32px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes fadeRight {
+        from {
+          opacity: 0;
+          transform: translateX(32px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.92);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.03);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .card-pop {
+        animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--purple);
+        border-radius: 3px;
+      }
+
+      /* Responsive card */
+      @media (max-width: 560px) {
+        .dev-card {
+          grid-template-columns: 1fr;
+        }
+        .card-photo-wrap {
+          justify-self: center;
+        }
+        .dev-card::after {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrap">
+      <header>
+        <div class="badge"><span>✦</span> Card Generator</div>
+        <h1>AI Powered<br />Developer Card</h1>
+        <p>
+          Fill in your details below and watch your card come to life instantly.
+        </p>
+      </header>
+
+      <div class="layout">
+        <!-- ── Form ── -->
+        <div class="form-panel">
+          <h2><span class="icon">✦</span> Your Info</h2>
+
+          <div class="field">
+            <label>Full Name</label>
+            <input
+              type="text"
+              id="inp-name"
+              placeholder="e.g. Jhankar Mahbub"
+            />
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label>Age</label>
+              <input
+                type="number"
+                id="inp-age"
+                placeholder="e.g. 25"
+                min="1"
+                max="120"
+              />
+            </div>
+            <div class="field">
+              <label>Gender</label>
+              <select id="inp-gender">
+                <option value="">Select…</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Title / Role</label>
+            <input type="text" id="inp-role" placeholder="e.g. Web Developer" />
+          </div>
+
+          <div class="field">
+            <label>Brand / Organization</label>
+            <input
+              type="text"
+              id="inp-brand"
+              placeholder="e.g. Programming Hero"
+            />
+          </div>
+
+          <div class="field">
+            <label>Profile Photo</label>
+            <div class="upload-zone" id="upload-zone">
+              <input type="file" id="inp-photo" accept="image/*" />
+              <img id="preview-thumb" src="" alt="preview" />
+              <div class="upload-icon" id="upload-icon">🖼️</div>
+              <p>
+                <strong>Click to upload</strong> or drag & drop<br />PNG, JPG,
+                WEBP accepted
+              </p>
+            </div>
+          </div>
+
+          <button class="btn-generate" onclick="generateCard()">
+            ✦ Generate My Card
+          </button>
+        </div>
+
+        <!-- ── Preview ── -->
+        <div class="preview-panel">
+          <div class="preview-label">Live Preview</div>
+
+          <div class="card-wrap">
+            <div class="dev-card" id="dev-card">
+              <!-- dot decoration -->
+              <div class="dot-grid" id="dot-grid"></div>
+
+              <div class="card-left">
+                <div class="card-brand">
+                  <div class="brand-icon">▶</div>
+                  <div class="brand-name">
+                    <span id="card-brand">Programming Hero</span>
+                    <small>Developer Card</small>
+                  </div>
+                </div>
+
+                <div class="card-title">
+                  <span class="ai-text">AI Powered</span>
+                  <span class="sub-text" id="card-role-title"
+                    >Web Developer Card</span
+                  >
+                </div>
+
+                <div class="card-divider"></div>
+
+                <div class="info-row">
+                  <div class="info-icon">👤</div>
+                  <div class="info-content">
+                    <span class="info-label">Name :</span>
+                    <span class="info-value" id="card-name">—</span>
+                  </div>
+                </div>
+
+                <div class="info-row">
+                  <div class="info-icon">📅</div>
+                  <div class="info-content">
+                    <span class="info-label">Age :</span>
+                    <span class="info-value" id="card-age">—</span>
+                  </div>
+                </div>
+
+                <div class="info-row">
+                  <div class="info-icon" id="card-gender-icon">⚥</div>
+                  <div class="info-content">
+                    <span class="info-label">Gender :</span>
+                    <span class="info-value" id="card-gender">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-photo-wrap">
+                <div class="card-photo-placeholder" id="card-placeholder">
+                  <span class="big-icon">📷</span>
+                  <span>Your photo<br />here</span>
+                </div>
+                <img
+                  class="card-photo"
+                  id="card-photo"
+                  src=""
+                  alt="profile"
+                  style="display: none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-download" onclick="downloadCard()">
+            ⬇ Download Card as PNG
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- html2canvas for PNG download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+      // Build dot grid
+      const grid = document.getElementById("dot-grid");
+      for (let i = 0; i < 25; i++) {
+        const s = document.createElement("span");
+        grid.appendChild(s);
+      }
+
+      // Live-update on every input change
+      const fields = [
+        "inp-name",
+        "inp-age",
+        "inp-gender",
+        "inp-role",
+        "inp-brand",
+      ];
+      fields.forEach((id) => {
+        document.getElementById(id).addEventListener("input", liveUpdate);
+      });
+
+      function liveUpdate() {
+        const name = document.getElementById("inp-name").value.trim();
+        const age = document.getElementById("inp-age").value.trim();
+        const gender = document.getElementById("inp-gender").value;
+        const role = document.getElementById("inp-role").value.trim();
+        const brand = document.getElementById("inp-brand").value.trim();
+
+        document.getElementById("card-name").textContent = name || "—";
+        document.getElementById("card-age").textContent = age || "—";
+        document.getElementById("card-gender").textContent = gender || "—";
+        document.getElementById("card-role-title").textContent = role
+          ? role + " Card"
+          : "Web Developer Card";
+        document.getElementById("card-brand").textContent =
+          brand || "Programming Hero";
+
+        const genderIconEl = document.getElementById("card-gender-icon");
+        if (gender === "Male") genderIconEl.textContent = "♂";
+        else if (gender === "Female") genderIconEl.textContent = "♀";
+        else genderIconEl.textContent = "⚥";
+      }
+
+      // Photo upload
+      document
+        .getElementById("inp-photo")
+        .addEventListener("change", function () {
+          const file = this.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const src = e.target.result;
+            // thumb in upload zone
+            const thumb = document.getElementById("preview-thumb");
+            thumb.src = src;
+            thumb.style.display = "block";
+            document.getElementById("upload-icon").style.display = "none";
+
+            // card photo
+            document.getElementById("card-placeholder").style.display = "none";
+            const img = document.getElementById("card-photo");
+            img.src = src;
+            img.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        });
+
+      // Drag & drop
+      const zone = document.getElementById("upload-zone");
+      zone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        zone.style.borderColor = "var(--violet)";
+      });
+      zone.addEventListener("dragleave", () => {
+        zone.style.borderColor = "";
+      });
+      zone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        zone.style.borderColor = "";
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          document.getElementById("inp-photo").files = dt.files;
+          document
+            .getElementById("inp-photo")
+            .dispatchEvent(new Event("change"));
+        }
+      });
+
+      function generateCard() {
+        liveUpdate();
+        // pop animation
+        const card = document.getElementById("dev-card");
+        card.classList.remove("card-pop");
+        void card.offsetWidth;
+        card.classList.add("card-pop");
+      }
+
+      async function downloadCard() {
+        const card = document.getElementById("dev-card");
+        const canvas = await html2canvas(card, {
+          backgroundColor: null,
+          scale: 3,
+          useCORS: true,
+          logging: false,
+        });
+        const link = document.createElement("a");
+        link.download = "developer-card.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+    </script>
+  </body>
+</html>
